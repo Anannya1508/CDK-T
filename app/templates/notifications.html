@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Notifications</h2></div>
+            <div class="navbar-menu">
+                {% if session.get('user_role') == 'doctor' %}
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Doctor Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Patient Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Your Notifications</h1>
+            <p>Click individual notifications to mark read, or mark all at once.</p>
+            {% if notifications %}
+            <div class="card-actions" style="margin-top: 12px;">
+                <form method="POST" action="{{ url_for('mark_all_notifications_read') }}">
+                    <button class="btn btn-outline" type="submit">Mark All as Read</button>
+                </form>
+                <form method="POST" action="{{ url_for('delete_all_notifications') }}">
+                    <button class="btn btn-danger" type="submit">Delete All</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if notifications %}
+            <div class="appointments-grid">
+                {% for note in notifications %}
+                    <div class="appointment-card" style="border-left-color: {{ '#f59e0b' if not note.is_read else '#1d4ed8' }};">
+                        <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center;">
+                            <h3 style="margin: 0; color: #0f4c5c;">{{ note.title }}</h3>
+                            <div class="notif-meta-actions">
+                                {% if not note.is_read %}
+                                    <span class="status-badge status-requested">New</span>
+                                {% else %}
+                                    <span class="status-badge status-approved">Read</span>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('delete_notification', notification_id=note.id) }}">
+                                    <button class="notif-delete-icon" type="submit" title="Delete notification" aria-label="Delete notification">🗑</button>
+                                </form>
+                            </div>
+                        </div>
+                        <p style="margin-top: 8px; color: #334155;">{{ note.message }}</p>
+                        <p style="margin-top: 8px; color: #64748b; font-size: 0.9rem;">{{ note.created_at|format_datetime }}</p>
+
+                        <div class="card-actions" style="margin-top: 10px;">
+                            {% if not note.is_read %}
+                            <form method="POST" action="{{ url_for('mark_notification_read', notification_id=note.id) }}">
+                                <button class="btn btn-primary" type="submit">Mark as Read</button>
+                            </form>
+                            {% endif %}
+                            {% if note.link %}
+                                <a href="{{ note.link }}" class="btn btn-outline">Open</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="confirm-card" style="padding: 20px;">
+                <h2>No notifications yet</h2>
+                <p>You will see doctor/patient updates here.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

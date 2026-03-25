@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Specialists - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>CKD Consultation Center</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('appointments') }}" class="btn btn-secondary">My Appointments</a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header booking-header">
+            <h1>Kidney Specialist Doctors</h1>
+            <p>Choose a nephrology specialist and schedule your consultation. All cards show doctor profile, ratings, and clinic details.</p>
+            <div class="pill-highlight">Recommended</div>
+            {% if prediction_id %}
+                <div class="alert-note">Based on your recent prediction, a doctor consultation is recommended.</div>
+            {% endif %}
+        </div>
+
+        <div class="cards-grid">
+            {% for doctor in doctors %}
+                <div class="doctor-card">
+                    <h3 class="doctor-name">{{ doctor.name }}</h3>
+                    <p class="doctor-meta"><strong>Specialty:</strong> {{ doctor.specialty }}</p>
+                    <p class="doctor-meta"><strong>Experience:</strong> {{ doctor.experience }}</p>
+                    <p class="doctor-meta"><strong>Hospital:</strong> {{ doctor.hospital }}</p>
+                    <div class="card-actions">
+                        <a class="btn btn-primary" href="{{ url_for('book_appointment', doctor_id=doctor.id, prediction_id=prediction_id) }}">Book Appointment</a>
+                        <a class="btn btn-outline" href="{{ url_for('patient_chat', doctor_id=doctor.id) }}">Chat First</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="confirm-card" style="padding: 20px;">
+                    <p>No registered doctors available yet. Please check back shortly.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

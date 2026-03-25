@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Role - CKD Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Welcome to CKD Care</h1>
+                    <p>Select how you want to continue</p>
+                </div>
+
+                <div style="display: grid; gap: 12px; margin-top: 10px;">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Continue as Patient</a>
+                    <a href="{{ url_for('doctor_login') }}" class="btn btn-primary btn-lg" style="background: #0f766e;">Doctor Login</a>
+                    <a href="{{ url_for('doctor_register') }}" class="btn btn-lg" style="border: 2px solid #0f766e; color: #0f766e; background: transparent; text-decoration: none;">Doctor Register</a>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Patients can sign up from patient login page if account is not created.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

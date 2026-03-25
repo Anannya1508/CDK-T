@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Doctor Dashboard</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('notifications_page') }}" class="notif-icon" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2a6 6 0 0 0-6 6v3.76l-1.63 2.8A1 1 0 0 0 5.23 16h13.54a1 1 0 0 0 .86-1.44L18 11.76V8a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 22z"/>
+                    </svg>
+                    {% if unread_notification_count > 0 %}
+                        <span class="notif-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('doctor_appointments') }}" class="btn btn-secondary">Appointment Requests</a>
+                <a href="{{ url_for('doctor_chat_hub') }}" class="btn btn-secondary">Patient Chats</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header booking-header">
+            <h1>Welcome Dr. {{ doctor_name }}</h1>
+            <p>Here’s your command center for patient requests, upcoming consultations, and quick actions.</p>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h4>Pending Requests</h4>
+                <div class="kpi-value">{{ pending_requests|length }}</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Upcoming Approved</h4>
+                <div class="kpi-value">{{ approved_appointments|length }}</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Unread Notifications</h4>
+                <div class="kpi-value">{{ unread_notification_count }}</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Quick Actions</h4>
+                <div class="kpi-value">4</div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <h3>Pending Requests</h3>
+            {% if pending_requests %}
+                {% for request in pending_requests %}
+                    <div class="appointment-card" style="margin-bottom: 10px;">
+                        <p><strong>Patient ID:</strong> {{ request.user_id }}</p>
+                        <p><strong>Requested Time:</strong> {{ request.appointment_datetime|format_datetime }}</p>
+                        <p><strong>Mode:</strong> {{ request.mode }}</p>
+                        <p><strong>Reason:</strong> {{ request.reason if request.reason else 'General consultation' }}</p>
+                    </div>
+                {% endfor %}
+                <div class="section-actions">
+                    <a href="{{ url_for('doctor_appointments') }}" class="btn btn-primary">Manage Requests</a>
+                    <a href="{{ url_for('doctor_chat_hub') }}" class="btn btn-outline">Go to Chat</a>
+                </div>
+            {% else %}
+                <p style="color: #475569; margin-bottom: 0;">No pending appointment requests at the moment.</p>
+            {% endif %}
+        </div>
+            <h3 style="margin-bottom: 12px; color: #0f4c5c;">Pending Requests</h3>
+            {% if pending_requests %}
+                {% for request in pending_requests %}
+                    <div class="appointment-card" style="margin-bottom: 10px;">
+                        <p><strong>Patient ID:</strong> {{ request.user_id }}</p>
+                        <p><strong>Requested Time:</strong> {{ request.appointment_datetime|format_datetime }}</p>
+                        <p><strong>Mode:</strong> {{ request.mode }}</p>
+                        <p><strong>Reason:</strong> {{ request.reason if request.reason else 'General consultation' }}</p>
+                    </div>
+                {% endfor %}
+                <a href="{{ url_for('doctor_appointments') }}" class="btn btn-primary">Manage Requests</a>
+            {% else %}
+                <p style="color: #475569;">No pending appointment requests at the moment.</p>
+            {% endif %}
+        </div>
+
+
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

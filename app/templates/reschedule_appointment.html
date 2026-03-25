@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reschedule Appointment - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <div id="toastBackdrop" class="toast-backdrop"></div>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Reschedule Consultation</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('appointments') }}" class="btn btn-secondary">Back to Appointments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+        {% if error %}
+            <div id="serverMessage" data-message="{{ error }}" data-type="warning" hidden></div>
+        {% endif %}
+
+        <div class="page-header">
+            <h1>Reschedule with {{ appointment.doctor_name }}</h1>
+            <p>Current appointment: {{ appointment.appointment_datetime|format_datetime }}</p>
+        </div>
+
+        <div class="booking-card">
+            <form method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="appointment_date">New Date</label>
+                        <input type="date" id="appointment_date" name="appointment_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment_time">New Time</label>
+                        <input type="time" id="appointment_time" name="appointment_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mode">Consultation Mode</label>
+                        <select id="mode" name="mode">
+                            <option value="In-person" {% if appointment.mode == 'In-person' %}selected{% endif %}>In-person</option>
+                            <option value="Online" {% if appointment.mode == 'Online' %}selected{% endif %}>Online</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-actions" style="margin-top: 18px;">
+                    <button class="btn btn-primary" type="submit">Save New Schedule</button>
+                    <a href="{{ url_for('appointments') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastBackdrop = document.getElementById('toastBackdrop');
+
+            function updateBackdropState() {
+                const hasToast = toastContainer && toastContainer.children.length > 0;
+                if (toastBackdrop) {
+                    toastBackdrop.classList.toggle('active', hasToast);
+                }
+            }
+
+            function removeToast(toast) {
+                if (!toast) return;
+                toast.classList.add('hide');
+                window.setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                    updateBackdropState();
+                }, 220);
+            }
+
+            function createToast(message, type, autoCloseMs) {
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-' + (type || 'info');
+
+                const text = document.createElement('div');
+                text.className = 'toast-text';
+                text.textContent = message;
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'toast-close';
+                closeBtn.textContent = 'x';
+                closeBtn.addEventListener('click', function () {
+                    removeToast(toast);
+                });
+
+                toast.appendChild(text);
+                toast.appendChild(closeBtn);
+                toastContainer.appendChild(toast);
+                updateBackdropState();
+
+                if (autoCloseMs && autoCloseMs > 0) {
+                    window.setTimeout(function () {
+                        removeToast(toast);
+                    }, autoCloseMs);
+                }
+            }
+
+            const serverMessage = document.getElementById('serverMessage');
+            if (serverMessage && serverMessage.dataset.message) {
+                createToast(serverMessage.dataset.message, serverMessage.dataset.type || 'warning', 3200);
+            }
+        })();
+    </script>
+</body>
+</html>

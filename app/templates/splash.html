@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD Care - Health Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/splash.css') }}">
+</head>
+<body>
+    <div class="splash-container">
+        <div class="kidney-blur"></div>
+        <div class="splash-content">
+            <svg class="logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- Medical Cross -->
+                <circle cx="100" cy="100" r="95" fill="none" stroke="#007bff" stroke-width="3"/>
+                <g transform="translate(100, 100)">
+                    <!-- Vertical line -->
+                    <rect x="-8" y="-40" width="16" height="80" fill="#007bff" rx="8"/>
+                    <!-- Horizontal line -->
+                    <rect x="-40" y="-8" width="80" height="16" fill="#007bff" rx="8"/>
+                </g>
+                <!-- Kidney shape -->
+                <ellipse cx="140" cy="70" rx="20" ry="30" fill="none" stroke="#28a745" stroke-width="2"/>
+                <circle cx="130" cy="75" r="5" fill="#28a745"/>
+            </svg>
+            <h1 class="app-title">CKD Care</h1>
+            <p class="subtitle">Chronic Kidney Disease Management</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        // Redirect after 3.5 seconds
+        setTimeout(function() {
+            window.location.href = "{{ url_for('role_select') }}";
+        }, 3500);
+    </script>
+</body>
+</html>

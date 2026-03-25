@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Register - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Doctor Registration</h1>
+                    <p>Fill basic details to join consultation panel</p>
+                </div>
+
+                {% if error %}
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="POST" class="auth-form">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="specialization">Specialization</label>
+                        <select id="specialization" name="specialization" class="form-control" required>
+                            <option value="">Select your nephrology specialization</option>
+                            <option value="Nephrology">Nephrology</option>
+                            <option value="Kidney Specialist">Kidney Specialist</option>
+                            <option value="Renal Medicine">Renal Medicine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience_years">Experience (years)</label>
+                        <input type="number" id="experience_years" name="experience_years" class="form-control" min="0" max="70" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="hospital_name">Hospital/Clinic</label>
+                        <input type="text" id="hospital_name" name="hospital_name" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="license_number">License Number</label>
+                        <input type="text" id="license_number" name="license_number" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" name="phone" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="preferred_video_platform">Preferred Video Platform</label>
+                        <select id="preferred_video_platform" name="preferred_video_platform" class="form-control">
+                            <option value="">Select a platform (optional)</option>
+                            <option value="Zoom">Zoom</option>
+                            <option value="Google Meet">Google Meet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="platform_email">Platform Email (Zoom/Meet)</label>
+                        <input type="email" id="platform_email" name="platform_email" class="form-control" placeholder="Zoom/Meet email (optional)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="payment_provider">Payment Provider</label>
+                        <select id="payment_provider" name="payment_provider" class="form-control">
+                            <option value="">None (demo mode)</option>
+                            <option value="Mock">Mock</option>
+                            <option value="Stripe">Stripe</option>
+                            <option value="PayPal">PayPal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment_account">Payment Account Details</label>
+                        <input type="text" id="payment_account" name="payment_account" class="form-control" placeholder="Enter provider account or instructions (optional)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" minlength="6" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="6" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg" style="background: #0f766e;">Register as Doctor</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already registered? <a href="{{ url_for('doctor_login') }}" class="link">Doctor Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

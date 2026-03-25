@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History - CKD Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .history-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .history-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .history-header p {
+            color: #666;
+        }
+
+        .predictions-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .prediction-item {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .prediction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .prediction-item.high-risk {
+            border-left-color: #dc3545;
+        }
+
+        .prediction-item.low-risk {
+            border-left-color: #28a745;
+        }
+
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .prediction-risk {
+            font-size: 1.2em;
+            font-weight: 700;
+            padding: 8px 15px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .prediction-risk.high-risk {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .prediction-risk.low-risk {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .prediction-date {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .prediction-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .detail-item {
+            font-size: 0.95em;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            color: #333;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .prediction-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.85em;
+            text-decoration: none;
+        }
+
+        .empty-state {
+            background: white;
+            padding: 60px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            max-width: 420px;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .toast-message {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+            color: #0f172a;
+            padding: 14px 16px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-left: 5px solid #0ea5e9;
+            font-weight: 600;
+            margin-bottom: 10px;
+            pointer-events: auto;
+        }
+
+        .toast-message button {
+            background: none;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #0f172a;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .toast-confirm-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .toast-confirm-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: 2px solid transparent;
+            cursor: pointer;
+            min-width: 80px;
+            pointer-events: auto;
+        }
+
+        .toast-confirm-btn.yes {
+            background: #10b981;
+            border-color: #059669;
+            color: white;
+        }
+
+        .toast-confirm-btn.no {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .toast-container.hidden {
+            display: none;
+        }
+
+        body.toast-open-blur > :not(#toastContainer) {
+            filter: blur(6px) brightness(0.82);
+            transition: filter 0.25s ease;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        body.toast-open-blur #toastContainer {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>CKD Care System</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="history-container">
+        <div class="history-header">
+            <h1>📊 Your Prediction History</h1>
+            <p>View all your CKD health assessments and their results</p>
+        </div>
+
+        {% if predictions %}
+            <div class="predictions-list">
+                {% for prediction in predictions %}
+                    <div class="prediction-item {{ 'high-risk' if prediction.risk_level == 'High Risk' else 'low-risk' }}">
+                        <div class="prediction-header">
+                            <div>
+                                <span class="prediction-risk {{ 'high-risk' if prediction.risk_level == 'High Risk' else 'low-risk' }}">
+                                    {{ prediction.risk_level }}
+                                </span>
+                                <div class="prediction-date">
+                                    {{ prediction.created_at|format_datetime }}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.9em; color: #666;">Confidence</div>
+                                <div style="font-size: 1.5em; font-weight: 700; color: #667eea;">
+                                    {{ "%.1f"|format(prediction.confidence) }}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="prediction-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Age</div>
+                                <div class="detail-value">{{ prediction.age if prediction.age is not none else 'N/A' }} yrs</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Blood Pressure</div>
+                                <div class="detail-value">{{ prediction.bp }} mmHg</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Serum Creatinine</div>
+                                <div class="detail-value">{{ prediction.sc }} mg/dL</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Blood Urea</div>
+                                <div class="detail-value">{{ prediction.bu }} mg/dL</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Hemoglobin</div>
+                                <div class="detail-value">{{ prediction.hemo }} g/dL</div>
+                            </div>
+                        </div>
+
+                        <div class="prediction-actions">
+                            <a href="{{ url_for('view_prediction', prediction_id=prediction.id) }}" 
+                               class="btn btn-primary btn-small">
+                                View Details
+                            </a>
+                            <a href="{{ url_for('download_prediction_report', prediction_id=prediction.id) }}"
+                               class="btn btn-secondary btn-small">
+                                Download PDF
+                            </a>
+                            {% if prediction.risk_level == 'High Risk' %}
+                            <a href="{{ url_for('doctors', prediction_id=prediction.id) }}"
+                               class="btn btn-small"
+                               style="background: #0f766e; color: white;">
+                                Consult a Doctor
+                            </a>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_prediction', prediction_id=prediction.id) }}" style="display:inline;" onsubmit="return false;">
+                                <button type="button" class="btn btn-danger btn-small" onclick="askDelete(this)">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h2>No Predictions Yet</h2>
+                <p>You haven't made any CKD health assessments yet. Start your first prediction now!</p>
+                <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                    Start Your First Prediction
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="toastContainer" class="toast-container hidden"></div>
+
+    <script>
+        function showToast(message) {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+
+            toastContainer.innerHTML = `
+                <div class="toast-message">
+                    <span>${message}</span>
+                    <button aria-label="Close toast" onclick="closeToast()">&times;</button>
+                </div>
+            `;
+            toastContainer.classList.remove('hidden');
+            document.body.classList.add('toast-open-blur');
+
+            window.toastTimer = window.setTimeout(() => {
+                closeToast();
+            }, 3500);
+        }
+
+        function closeToast() {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+
+            toastContainer.classList.add('hidden');
+            toastContainer.innerHTML = '';
+            document.body.classList.remove('toast-open-blur');
+
+            if (window.toastTimer) {
+                window.clearTimeout(window.toastTimer);
+                window.toastTimer = null;
+            }
+        }
+
+        function askDelete(button) {
+            const form = button.closest('form');
+            if (!form) return;
+
+            showConfirmToast('Delete this record permanently?', function() {
+                form.submit();
+            }, closeToast);
+        }
+
+        function showConfirmToast(message, onConfirm, onCancel) {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+
+            window.toastConfirmAction = onConfirm;
+            window.toastCancelAction = onCancel;
+
+            toastContainer.innerHTML = `
+                <div class="toast-message">
+                    <span>${message}</span>
+                    <div class="toast-confirm-actions">
+                        <button class="toast-confirm-btn yes" onclick="confirmToastYes()">Yes</button>
+                        <button class="toast-confirm-btn no" onclick="confirmToastNo()">No</button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.classList.remove('hidden');
+            document.body.classList.add('toast-open-blur');
+
+            if (window.toastTimer) {
+                window.clearTimeout(window.toastTimer);
+                window.toastTimer = null;
+            }
+        }
+
+        function confirmToastYes() {
+            if (window.toastConfirmAction) {
+                window.toastConfirmAction();
+            }
+            closeToast();
+        }
+
+        function confirmToastNo() {
+            if (window.toastCancelAction) {
+                window.toastCancelAction();
+            }
+            closeToast();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const queryMessage = `{{ request.args.get('message', '') }}`;
+            const flashMessage = {{ flash_message|tojson|default('""') }};
+            const msg = (flashMessage && flashMessage.trim()) ? flashMessage : queryMessage;
+            if (msg && msg.trim() !== '') {
+                showToast(msg);
+            }
+        });
+    </script>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

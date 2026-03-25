@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD Care - Medical Assessment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/predict.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>CKD Care System</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="prediction-wrapper">
+            <div class="form-header">
+                <h1>CKD Health Assessment Form</h1>
+                <p>Please provide accurate health information for accurate prediction</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+
+            <form id="predictionForm" class="prediction-form">
+                <!-- Section 1: Vital Signs -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Section 1: Vital Signs</h2>
+                        <span class="section-number">📊</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">Age *</label>
+                            <input 
+                                type="number" 
+                                id="age" 
+                                name="age" 
+                                class="form-control" 
+                                placeholder="e.g., 45" 
+                                min="1"
+                                max="120"
+                                required
+                            />
+                            <small>Enter your age in years</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bp">Blood Pressure (bp) *</label>
+                            <input 
+                                type="number" 
+                                id="bp" 
+                                name="bp" 
+                                class="form-control" 
+                                placeholder="e.g., 120" 
+                                step="0.1"
+                                required
+                            />
+                            <small>Enter systolic BP (mmHg)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Urine Test -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Section 2: Urine Test</h2>
+                        <span class="section-number">🧪</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sg">Specific Gravity (sg) *</label>
+                            <select id="sg" name="sg" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="1.005">1.005</option>
+                                <option value="1.010">1.010</option>
+                                <option value="1.015">1.015</option>
+                                <option value="1.020">1.020</option>
+                                <option value="1.025">1.025</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="al">Albumin (al) *</label>
+                            <select id="al" name="al" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="0">0 (None)</option>
+                                <option value="1">1 (Trace)</option>
+                                <option value="2">2 (Mild)</option>
+                                <option value="3">3 (Moderate)</option>
+                                <option value="4">4 (Severe)</option>
+                                <option value="5">5 (Very High)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="su">Sugar (su) *</label>
+                            <select id="su" name="su" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="0">0 (None)</option>
+                                <option value="1">1 (Trace)</option>
+                                <option value="2">2 (Mild)</option>
+                                <option value="3">3 (Moderate)</option>
+                                <option value="4">4 (Severe)</option>
+                                <option value="5">5 (Very High)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rbc">Red Blood Cells (rbc) *</label>
+                            <select id="rbc" name="rbc" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="normal">Normal</option>
+                                <option value="abnormal">Abnormal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pc">Pus Cell (pc) *</label>
+                            <select id="pc" name="pc" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="normal">Normal</option>
+                                <option value="abnormal">Abnormal</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pcc">Pus Cell Clumps (pcc) *</label>
+                            <select id="pcc" name="pcc" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="present">Present</option>
+                                <option value="notpresent">Not Present</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ba">Bacteria (ba) *</label>
+                        <select id="ba" name="ba" class="form-control" required>
+                            <option value="">Select Option</option>
+                            <option value="present">Present</option>
+                            <option value="notpresent">Not Present</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 3: Blood Test -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Section 3: Blood Test</h2>
+                        <span class="section-number">🧬</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bgr">Blood Glucose Random (bgr) *</label>
+                            <input 
+                                type="number" 
+                                id="bgr" 
+                                name="bgr" 
+                                class="form-control" 
+                                placeholder="e.g., 120" 
+                                step="0.1"
+                                required
+                            />
+                            <small>mg/dL</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bu">Blood Urea (bu) *</label>
+                            <input 
+                                type="number" 
+                                id="bu" 
+                                name="bu" 
+                                class="form-control" 
+                                placeholder="e.g., 60" 
+                                step="0.1"
+                                required
+                            />
+                            <small>mg/dL</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sc">Serum Creatinine (sc) *</label>
+                            <input 
+                                type="number" 
+                                id="sc" 
+                                name="sc" 
+                                class="form-control" 
+                                placeholder="e.g., 1.0" 
+                                step="0.1"
+                                required
+                            />
+                            <small>mg/dL</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sod">Sodium (sod) *</label>
+                            <input 
+                                type="number" 
+                                id="sod" 
+                                name="sod" 
+                                class="form-control" 
+                                placeholder="e.g., 140" 
+                                step="0.1"
+                                required
+                            />
+                            <small>mEq/L</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pot">Potassium (pot) *</label>
+                        <input 
+                            type="number" 
+                            id="pot" 
+                            name="pot" 
+                            class="form-control" 
+                            placeholder="e.g., 5.0" 
+                            step="0.1"
+                            required
+                        />
+                        <small>mEq/L</small>
+                    </div>
+                </div>
+
+                <!-- Section 4: Blood Cell Analysis -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Section 4: Blood Cell Analysis</h2>
+                        <span class="section-number">🔬</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hemo">Hemoglobin (hemo) *</label>
+                            <input 
+                                type="number" 
+                                id="hemo" 
+                                name="hemo" 
+                                class="form-control" 
+                                placeholder="e.g., 13.5" 
+                                step="0.1"
+                                required
+                            />
+                            <small>g/dL</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pcv">Packed Cell Volume (pcv) *</label>
+                            <input 
+                                type="number" 
+                                id="pcv" 
+                                name="pcv" 
+                                class="form-control" 
+                                placeholder="e.g., 40" 
+                                step="0.1"
+                                required
+                            />
+                            <small>%</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="wc">White Blood Cell Count (wc) *</label>
+                            <input 
+                                type="number" 
+                                id="wc" 
+                                name="wc" 
+                                class="form-control" 
+                                placeholder="e.g., 7.5" 
+                                step="0.1"
+                                required
+                            />
+                            <small>K/uL</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rc">Red Blood Cell Count (rc) *</label>
+                            <input 
+                                type="number" 
+                                id="rc" 
+                                name="rc" 
+                                class="form-control" 
+                                placeholder="e.g., 5.0" 
+                                step="0.1"
+                                required
+                            />
+                            <small>M/uL</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Medical History -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Section 5: Medical History</h2>
+                        <span class="section-number">📋</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="htn">Hypertension (htn) *</label>
+                            <select id="htn" name="htn" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dm">Diabetes Mellitus (dm) *</label>
+                            <select id="dm" name="dm" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cad">Coronary Artery Disease (cad) *</label>
+                            <select id="cad" name="cad" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="appet">Appetite (appet) *</label>
+                            <select id="appet" name="appet" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="good">Good</option>
+                                <option value="poor">Poor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pe">Pedal Edema (pe) *</label>
+                            <select id="pe" name="pe" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ane">Anemia (ane) *</label>
+                            <select id="ane" name="ane" class="form-control" required>
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">Cancel</a>
+                    <button type="reset" class="btn btn-outline btn-lg">Clear Form</button>
+                    <button type="submit" class="btn btn-primary btn-lg">Get Prediction</button>
+                </div>
+            </form>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner hidden">
+                <div class="spinner"></div>
+                <p>Analyzing your health data...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal (moved outside blurred content parent) -->
+    <div id="resultModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Prediction Results</h2>
+                <button type="button" class="close-btn" onclick="closeResultModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="resultContent">
+                    <!-- Results will be filled by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeResultModal()">Close</button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

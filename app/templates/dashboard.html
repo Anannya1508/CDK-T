@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CKD Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>CKD Prediction System</h2>
+            </div>
+            <div class="navbar-menu">
+                <span class="user-info">Welcome, {{ user_name }}!</span>
+                <a href="{{ url_for('notifications_page') }}" class="notif-icon" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2a6 6 0 0 0-6 6v3.76l-1.63 2.8A1 1 0 0 0 5.23 16h13.54a1 1 0 0 0 .86-1.44L18 11.76V8a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 22z"/>
+                    </svg>
+                    {% if unread_notification_count > 0 %}
+                        <span class="notif-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-wrapper">
+            <div class="welcome-card">
+                <div class="card-header">
+                    <h1>Welcome back, {{ user_name }}! 👋</h1>
+                </div>
+                <div class="card-body">
+                    <p class="welcome-message">
+                        You are now in the CKD Health Command Center. Here you can do a complete risk assessment, monitor trends,
+                        and connect directly with certified specialists for teleconsultation.
+                    </p>
+                    <p class="info-message">
+                        <strong>What you can do:</strong> Run personalized CKD care prediction, view history, track health signals,
+                        and book clinical consultations with top nephrologists.
+                    </p>
+                </div>
+            </div>
+
+            <div class="action-cards">
+                <div class="action-card primary">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3>Health Prediction</h3>
+                    <p>Run an AI-powered CKD risk evaluation with actionable insights.</p>
+                    <a href="{{ url_for('predict_page') }}" class="btn btn-action">
+                        Start Prediction →
+                    </a>
+                </div>
+
+                <div class="action-card secondary">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.3-1.54c-.31-.37-.86-.46-1.35-.23-.48.24-.76.8-.65 1.35.11.55.56.99 1.12.99h8c.6 0 1.09-.54 1.09-1.2 0-.48-.31-.92-.77-1.11-.47-.2-1.02-.07-1.35.32l-2.99-3.82z"/>
+                        </svg>
+                    </div>
+                    <h3>Prediction History</h3>
+                    <p>View all your past assessments</p>
+                    <a href="{{ url_for('prediction_history') }}" class="btn btn-action">
+                        View History →
+                    </a>
+                </div>
+
+                <div class="action-card tertiary">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                    </div>
+                    <h3>CKD Information</h3>
+                    <p>Learn about chronic kidney disease</p>
+                    <a href="#" class="btn btn-action" onclick="showCKDInfo(); return false;">
+                        Learn More →
+                    </a>
+                </div>
+
+                <div class="action-card consult">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V10h14v9zm-7-7c-1.66 0-3 1.34-3 3h2c0-.55.45-1 1-1s1 .45 1 1h2c0-1.66-1.34-3-3-3zm0-5c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.73V11h2v-.27c.6-.35 1-.99 1-1.73 0-1.1-.9-2-2-2z"/>
+                        </svg>
+                    </div>
+                    <h3>Doctor Consultation</h3>
+                    <p>Book expert nephrologist consultations, attach reports, and chat securely.</p>
+                    <a href="{{ url_for('doctors') }}" class="btn btn-action">
+                        Consult Doctors →
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="info-section">
+                <div class="info-card">
+                    <h4>About CKD</h4>
+                    <p>
+                        Chronic Kidney Disease (CKD) affects kidney filtering over time and may lead to serious health issues.
+                        This platform integrates AI prediction with specialist consultation and care planning for early intervention.
+                    </p>
+                    <p>
+                        Use the full cycle: predict your risk, track trends with data, and connect with nephrology experts for personalized treatment guidance.
+                    </p>
+                </div>
+                <div class="info-card">
+                    <h4>How to Use</h4>
+                    <ul>
+                        <li>Run the CKD Care prediction test for a risk profile.</li>
+                        <li>Review your prediction history and ongoing trend analytics.</li>
+                        <li>Book a doctor consultation directly from this dashboard.</li>
+                        <li>Complete online payment (for approved sessions) and receive secure e-consult link.</li>
+                        <li>Follow personalized recommendations from your health report.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

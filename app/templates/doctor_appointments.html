@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Appointments - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Appointment Requests</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('notifications_page') }}" class="notif-icon" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2a6 6 0 0 0-6 6v3.76l-1.63 2.8A1 1 0 0 0 5.23 16h13.54a1 1 0 0 0 .86-1.44L18 11.76V8a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 22z"/>
+                    </svg>
+                    {% if unread_notification_count > 0 %}
+                        <span class="notif-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Doctor Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Pending Appointment Requests</h1>
+            <p>Approve or reject patient requests after checking your schedule.</p>
+        </div>
+
+        {% if notifications %}
+            <div class="confirm-card" style="margin-bottom: 16px;">
+                <h3 style="margin-bottom: 8px; color: #0f4c5c;">Recent Notifications</h3>
+                {% for note in notifications %}
+                    <p style="margin-bottom: 6px; color: #334155;">{{ note.title }} - {{ note.message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="appointments-grid">
+            {% for appointment in pending_requests %}
+                <div class="appointment-card">
+                    <h3>{{ appointment.doctor_name }}</h3>
+                    <div class="metrics-list">
+                        <p><strong>Patient ID:</strong> {{ appointment.user_id }}</p>
+                        <p><strong>Schedule:</strong> {{ appointment.appointment_datetime|format_datetime }}</p>
+                        <p><strong>Mode:</strong> {{ appointment.mode }}</p>
+                        <p><strong>Reason:</strong> {{ appointment.reason if appointment.reason else 'General nephrology consultation' }}</p>
+                    </div>
+
+                    <div class="card-actions" style="margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <form method="POST" action="{{ url_for('approve_appointment', appointment_id=appointment.id) }}">
+                            <button class="btn btn-primary" type="submit">Approve</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_appointment', appointment_id=appointment.id) }}" style="display:flex; gap:8px;">
+                            <input type="text" name="decision_note" placeholder="Optional rejection note" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px;" />
+                            <button class="btn btn-danger" type="submit">Reject</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('doctor_cancel_appointment', appointment_id=appointment.id) }}">
+                            <button class="btn btn-warning" type="submit">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="confirm-card">
+                    <p>No pending appointment requests.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="confirm-card" style="margin-top: 20px;">
+            <h3 style="margin-bottom: 8px; color: #0f4c5c;">Recently Reviewed</h3>
+            {% if reviewed %}
+                {% for item in reviewed %}
+                    <div class="appointment-card" style="padding: 10px; margin-bottom: 8px; border: 1px solid #d1e1f5; border-radius: 8px;">
+                        <strong>Patient #{{ item.user_id }}</strong>
+                        <p style="margin: 3px 0; color: #334155;">{{ item.appointment_datetime.strftime('%b %d, %Y %I:%M %p') }} | {{ item.mode }} | {{ item.status }}</p>
+                        {% if item.mode == 'Online' %}
+                            <p style="margin: 3px 0; color: #334155;">Payment status: {{ item.payment_status }}</p>
+                            {% if item.status == 'Paid' and not item.meeting_link %}
+                                <form method="POST" action="{{ url_for('send_appointment_link', appointment_id=item.id) }}">
+                                    <button type="submit" class="btn btn-primary" style="margin-top:4px;">Send Zoom/Google Meet Link</button>
+                                </form>
+                            {% endif %}
+                            {% if item.meeting_link %}
+                                <p><a href="{{ item.meeting_link }}" target="_blank">Meeting link: {{ item.meeting_link }}</a></p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No reviewed requests yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

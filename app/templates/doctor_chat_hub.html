@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Chat Hub - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Patient Chats</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Doctor Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header chat-hub-header">
+            <h1>Select Patient Conversation</h1>
+            <p>Access chats safely, deliver clinical recommendations, and close case follow-up in one dashboard.</p>
+        </div>
+
+        <div class="chat-search">
+            <input type="text" class="search-input" placeholder="Search patient name or email" id="patientSearch" />
+        </div>
+
+        <div class="cards-grid">
+            {% for patient in patients %}
+                <div class="doctor-card">
+                    <h3 class="doctor-name">{{ patient.name }}</h3>
+                    <p class="doctor-meta"><strong>Email:</strong> {{ patient.email }}</p>
+                    <div class="card-actions">
+                        <a href="{{ url_for('doctor_chat', patient_id=patient.id) }}" class="btn btn-primary">Open Chat</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="confirm-card" style="padding: 20px;">
+                    <p>No chat conversations yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('patientSearch').addEventListener('input', function () {
+            const query = this.value.trim().toLowerCase();
+            document.querySelectorAll('.doctor-card').forEach(card => {
+                const name = card.querySelector('.doctor-name')?.textContent.toLowerCase();
+                const email = card.querySelector('.doctor-meta')?.textContent.toLowerCase();
+                if (!query || (name && name.includes(query)) || (email && email.includes(query))) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

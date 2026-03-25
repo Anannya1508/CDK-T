@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmed - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <div id="toastBackdrop" class="toast-backdrop"></div>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>Consultation Confirmed</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('appointments') }}" class="btn btn-secondary">My Appointments</a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+        <div id="serverMessage" data-message="Appointment request sent. Waiting for doctor approval." data-type="success" hidden></div>
+
+        <div class="confirm-card">
+            <h1>Appointment Request Submitted</h1>
+            <p>Your consultation request has been sent to the doctor. You will get notification after approval/rejection.</p>
+
+            <div class="confirm-list">
+                <p><strong>Doctor:</strong> {{ appointment.doctor_name }}</p>
+                <p><strong>Hospital:</strong> {{ appointment.hospital }}</p>
+                <p><strong>Date & Time:</strong> {{ appointment.appointment_datetime|format_datetime }}</p>
+                <p><strong>Mode:</strong> {{ appointment.mode }}</p>
+                <p><strong>Status:</strong> {{ appointment.status }}</p>
+            </div>
+
+            <div class="card-actions">
+                <a href="{{ url_for('appointments') }}" class="btn btn-primary">View All Appointments</a>
+                <a href="{{ url_for('doctors') }}" class="btn btn-outline">Book Another</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastBackdrop = document.getElementById('toastBackdrop');
+
+            function updateBackdropState() {
+                const hasToast = toastContainer && toastContainer.children.length > 0;
+                if (toastBackdrop) {
+                    toastBackdrop.classList.toggle('active', hasToast);
+                }
+            }
+
+            function removeToast(toast) {
+                if (!toast) return;
+                toast.classList.add('hide');
+                window.setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                    updateBackdropState();
+                }, 220);
+            }
+
+            function createToast(message, type, autoCloseMs) {
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-' + (type || 'info');
+
+                const text = document.createElement('div');
+                text.className = 'toast-text';
+                text.textContent = message;
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'toast-close';
+                closeBtn.textContent = 'x';
+                closeBtn.addEventListener('click', function () {
+                    removeToast(toast);
+                });
+
+                toast.appendChild(text);
+                toast.appendChild(closeBtn);
+                toastContainer.appendChild(toast);
+                updateBackdropState();
+
+                if (autoCloseMs && autoCloseMs > 0) {
+                    window.setTimeout(function () {
+                        removeToast(toast);
+                    }, autoCloseMs);
+                }
+            }
+
+            const serverMessage = document.getElementById('serverMessage');
+            if (serverMessage && serverMessage.dataset.message) {
+                createToast(serverMessage.dataset.message, serverMessage.dataset.type || 'success', 2800);
+            }
+        })();
+    </script>
+</body>
+</html>

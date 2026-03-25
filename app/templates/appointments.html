@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <div id="toastBackdrop" class="toast-backdrop"></div>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand"><h2>My Consultations</h2></div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('notifications_page') }}" class="notif-icon" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2a6 6 0 0 0-6 6v3.76l-1.63 2.8A1 1 0 0 0 5.23 16h13.54a1 1 0 0 0 .86-1.44L18 11.76V8a6 6 0 0 0-6-6zm0 20a3 3 0 0 0 2.83-2H9.17A3 3 0 0 0 12 22z"/>
+                    </svg>
+                    {% if unread_notification_count > 0 %}
+                        <span class="notif-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('doctors') }}" class="btn btn-secondary">Find Doctors</a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header booking-header">
+            <h1>Booked Appointments</h1>
+            <p>Track your specialist consultations and upcoming sessions. Quick actions for reschedule, payment, and joining online.</p>
+            <div class="pill-highlight">My Appointments</div>
+        </div>
+
+        <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+        {% if message %}
+            <div id="serverMessage" data-message="{{ message }}" hidden></div>
+        {% endif %}
+
+        {% if reminders %}
+            <div class="confirm-card" style="margin-bottom: 18px;">
+                <h3 style="margin-bottom: 10px; color: #0f4c5c;">Upcoming Reminders (next 48 hours)</h3>
+                {% for reminder in reminders %}
+                    <p style="margin-bottom: 8px; color: #334155;">{{ reminder.doctor_name }} {{ reminder.time_label }} on {{ reminder.formatted_time }} ({{ reminder.mode }})</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if appointments %}
+            <div class="appointments-grid">
+                {% for appointment in appointments %}
+                    <div class="appointment-card">
+                        <h3>{{ appointment.doctor_name }}</h3>
+                        <p>{{ appointment.hospital }}</p>
+                        <div class="metrics-list">
+                            <p><strong>When:</strong> {{ appointment.appointment_datetime|format_datetime }}</p>
+                            <p><strong>Mode:</strong> {{ appointment.mode }}</p>
+                            <p><strong>Reason:</strong> {{ appointment.reason if appointment.reason else 'General kidney health consultation' }}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-{{ appointment.status|lower }}">{{ appointment.status }}</span></p>
+                            {% if appointment.mode == 'Online' %}
+                                <p><strong>Payment:</strong> {{ appointment.payment_status or 'Pending' }}</p>
+                            {% endif %}
+                            {% if appointment.meeting_link %}
+                                <p><strong>Meeting Link:</strong> <a href="{{ appointment.meeting_link }}" target="_blank" rel="noopener noreferrer">Join session</a></p>
+                            {% endif %}
+                        </div>
+                        <div class="card-actions" style="margin-top: 12px; display:flex; gap: 8px; flex-wrap: wrap; align-items:center;">
+                            {% if appointment.status != 'Cancelled' and appointment.status != 'Rejected' %}
+                                {% if appointment.status != 'Requested' %}
+                                    <a href="{{ url_for('reschedule_appointment', appointment_id=appointment.id) }}" class="btn btn-outline">Reschedule</a>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}" class="cancel-form" data-doctor-name="{{ appointment.doctor_name }}">
+                                    <button class="btn btn-danger" type="submit">Cancel Appointment</button>
+                                </form>
+                            {% endif %}
+
+                            {% if appointment.status == 'Requested' %}
+                                <span style="color: #64748b; font-size: 0.9rem;">Waiting for doctor approval.</span>
+                            {% elif appointment.status == 'Approved' and appointment.mode == 'Online' and appointment.payment_status == 'Pending' %}
+                                <form method="POST" action="{{ url_for('pay_appointment', appointment_id=appointment.id) }}" class="pay-form">
+                                    <button class="btn btn-primary" type="submit">Pay Online Now</button>
+                                </form>
+                                <span style="color: #64748b; font-size: 0.9rem;">Doctor approved; pay to confirm and receive link.</span>
+                            {% elif appointment.status == 'Paid' and appointment.mode == 'Online' %}
+                                <span style="color: #1d4ed8; font-size: 0.95rem;">Paid. Waiting for doctor to send meeting link.</span>
+                            {% elif appointment.status == 'Confirmed' and appointment.mode == 'Online' and appointment.meeting_link %}
+                                <a href="{{ appointment.meeting_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Join Online Consultation</a>
+                            {% elif appointment.status == 'Confirmed' and appointment.mode != 'Online' %}
+                                <span style="color: #1d4ed8; font-size: 0.95rem;">Appointment confirmed. You can reschedule or cancel.</span>
+                            {% endif %}
+
+                            <form method="POST" action="{{ url_for('delete_appointment', appointment_id=appointment.id) }}" class="delete-form" data-doctor-name="{{ appointment.doctor_name }}">
+                                <button class="btn btn-outline" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="confirm-card">
+                <h2>No appointments booked yet</h2>
+                <p>Schedule your first nephrology consultation from our specialist list.</p>
+                <div class="card-actions">
+                    <a href="{{ url_for('doctors') }}" class="btn btn-primary">Book Appointment</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+
+    <script>
+        (function () {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastBackdrop = document.getElementById('toastBackdrop');
+
+            function updateBackdropState() {
+                const hasToast = toastContainer && toastContainer.children.length > 0;
+                if (toastBackdrop) {
+                    toastBackdrop.classList.toggle('active', hasToast);
+                }
+            }
+
+            function removeToast(toast) {
+                if (!toast) return;
+                toast.classList.add('hide');
+                window.setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                    updateBackdropState();
+                }, 220);
+            }
+
+            function createToast(message, type, autoCloseMs) {
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-' + (type || 'info');
+
+                const text = document.createElement('div');
+                text.className = 'toast-text';
+                text.textContent = message;
+
+                const closeBtn = document.createElement('button');
+                closeBtn.type = 'button';
+                closeBtn.className = 'toast-close';
+                closeBtn.textContent = 'x';
+                closeBtn.addEventListener('click', function () {
+                    removeToast(toast);
+                });
+
+                toast.appendChild(text);
+                toast.appendChild(closeBtn);
+                toastContainer.appendChild(toast);
+                updateBackdropState();
+
+                if (autoCloseMs && autoCloseMs > 0) {
+                    window.setTimeout(function () {
+                        removeToast(toast);
+                    }, autoCloseMs);
+                }
+
+                return toast;
+            }
+
+            function showActionConfirmToast(form, message, confirmLabel) {
+                const confirmToast = createToast(
+                    message,
+                    'warning',
+                    0
+                );
+
+                const actions = document.createElement('div');
+                actions.className = 'toast-actions';
+
+                const keepBtn = document.createElement('button');
+                keepBtn.type = 'button';
+                keepBtn.className = 'toast-btn secondary';
+                keepBtn.textContent = 'Keep';
+                keepBtn.addEventListener('click', function () {
+                    removeToast(confirmToast);
+                });
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'toast-btn danger';
+                cancelBtn.textContent = confirmLabel;
+                cancelBtn.addEventListener('click', function () {
+                    form.submit();
+                });
+
+                actions.appendChild(keepBtn);
+                actions.appendChild(cancelBtn);
+                confirmToast.appendChild(actions);
+            }
+
+            document.querySelectorAll('.cancel-form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    const doctorName = form.getAttribute('data-doctor-name') || 'this doctor';
+                    showActionConfirmToast(form, 'Cancel appointment with ' + doctorName + '?', 'Yes, Cancel');
+                });
+            });
+
+            document.querySelectorAll('.delete-form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    const doctorName = form.getAttribute('data-doctor-name') || 'this appointment';
+                    showActionConfirmToast(form, 'Delete appointment history with ' + doctorName + '?', 'Yes, Delete');
+                });
+            });
+
+            const serverMessage = document.getElementById('serverMessage');
+            if (serverMessage && serverMessage.dataset.message) {
+                createToast(serverMessage.dataset.message, 'success', 3500);
+            }
+        })();
+    </script>
+</body>
+</html>

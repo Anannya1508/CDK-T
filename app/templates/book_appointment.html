@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>Book Specialist Consultation</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('doctors', prediction_id=prediction_id) }}" class="btn btn-secondary">Back to Doctors</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header booking-header">
+            <h1>{{ doctor.name }}</h1>
+            <p>{{ doctor.specialty }} · {{ doctor.experience }} · {{ doctor.hospital }}</p>
+            <div class="book-pill">Book Appointment</div>
+        </div>
+
+        <div class="booking-card">
+            {% if error %}
+                <div class="error-box">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <input type="hidden" name="prediction_id" value="{{ prediction_id if prediction_id else '' }}">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="appointment_date">Appointment Date</label>
+                        <input type="date" id="appointment_date" name="appointment_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment_time">Appointment Time</label>
+                        <input type="time" id="appointment_time" name="appointment_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mode">Consultation Mode</label>
+                        <select id="mode" name="mode">
+                            <option value="In-person">In-person</option>
+                            <option value="Online">Online</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="onlineOptions" style="display: none;">
+                        <label for="meeting_platform">Online Platform</label>
+                        <select id="meeting_platform" name="meeting_platform">
+                            <option value="Zoom">Zoom</option>
+                            <option value="Google Meet">Google Meet</option>
+                        </select>
+                        <small style="color:#64748b;">After appointment approval, you will pay and receive meeting link.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for Consultation</label>
+                        <textarea id="reason" name="reason" placeholder="Describe your concern briefly"></textarea>
+                    </div>
+                </div>
+
+                <div class="card-actions" style="margin-top: 18px;">
+                    <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                    <a href="{{ url_for('doctors', prediction_id=prediction_id) }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modeField = document.getElementById('mode');
+            const onlineOptions = document.getElementById('onlineOptions');
+
+            function toggleOnlineOptions() {
+                if (!onlineOptions) return;
+                if (modeField && modeField.value === 'Online') {
+                    onlineOptions.style.display = 'block';
+                } else {
+                    onlineOptions.style.display = 'none';
+                }
+            }
+
+            if (modeField) {
+                modeField.addEventListener('change', toggleOnlineOptions);
+            }
+            toggleOnlineOptions();
+        });
+    </script>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

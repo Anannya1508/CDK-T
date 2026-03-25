@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation Chat - CKD App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consult.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="app-logo"><span class="app-logo-text">CKD</span></div>
+            <div class="header-text-content">
+                <h1>CKD Consult Chat</h1>
+                <p class="header-subtitle">Secure patient-doctor conversation with attachments and history sync</p>
+            </div>
+            <div class="navbar-menu">
+                {% if viewer_role == 'doctor' %}
+                <a href="{{ url_for('doctor_chat_hub') }}" class="btn btn-secondary">Chat Hub</a>
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">Doctor Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('doctors') }}" class="btn btn-secondary">Find Specialist</a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Live Consultation with {{ chat_with.name }}</h1>
+            <p class="page-subtitle">Real-time clinical support powered by secure telemedicine protocols. Not for emergencies; please call local emergency services when needed.</p>
+        </div>
+
+        <div class="chat-meta-row">
+            <div class="typing-indicator" id="typingIndicator"></div>
+        </div>
+
+        <div id="toastContainer" class="toast-container-hidden"></div>
+
+        <script type="text/javascript">
+            sessionStorage.setItem('chat_user_name', '{{ session.get('user_name') or '' }}');
+        </script>
+
+        <div class="chat-card" data-room-id="{{ room_id }}" data-patient-id="{{ messages[0].patient_id if messages else (chat_with.id if viewer_role == 'doctor' else session.get('user_id')) }}" data-doctor-id="{{ messages[0].doctor_id if messages else (session.get('user_id') if viewer_role == 'doctor' else chat_with.id) }}" data-viewer-role="{{ viewer_role }}" data-viewer-id="{{ session.get('user_id') }}">
+            <div class="chat-window" id="chatWindow">
+                {% for msg in messages %}
+                <div class="chat-msg {{ 'user' if msg.sender_id == session.get('user_id') else 'bot' }}" data-message-id="{{ msg.id }}" data-sender-id="{{ msg.sender_id }}">
+                    <button class="msg-delete-btn" data-message-id="{{ msg.id }}" title="Delete message">✖</button>
+                    {% if msg.sender_id == session.get('user_id') %}
+                    <button class="msg-edit-btn" data-message-id="{{ msg.id }}" title="Edit message">✎</button>
+                    {% endif %}
+                    {% if msg.message %}
+                    <div class="msg-text">{{ msg.message }}</div>
+                    {% endif %}
+                    {% if msg.attachment_url %}
+                    <div class="msg-attachment">
+                        {% set ext = msg.attachment_url.rsplit('.', 1)[-1].lower() %}
+                        <span class="attachment-icon">📎</span>
+                        {% if ext in ['jpg','jpeg','png','gif'] %}
+                        <a href="{{ msg.attachment_url }}" target="_blank"><img class="attachment-preview" src="{{ msg.attachment_url }}" alt="Attachment"></a>
+                        {% elif ext in ['mp3','wav','ogg','m4a','webm'] %}
+                        <audio controls class="attachment-audio">
+                            <source src="{{ msg.attachment_url }}" type="audio/{{ 'mpeg' if ext == 'mp3' else ('webm' if ext == 'webm' else ext) }}">
+                            Your browser does not support the audio element.
+                        </audio>
+                        {% else %}
+                        <a href="{{ msg.attachment_url }}" target="_blank" class="attachment-link">Download attachment</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="chat-attachment-row">
+                <input type="file" id="attachmentInput" accept=".jpg,.jpeg,.png,.gif,.pdf" style="display: none;" />
+                <button class="attachment-button" id="attachmentBtn" type="button">📎 Attach File</button>
+                <span id="attachedFileLabel">No file selected</span>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="Type your message...">
+                <button class="btn btn-primary" id="chatSendBtn" type="button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/consult_chat.js') }}"></script>
+
+    <footer class="app-footer">
+        <div class="footer-container footer-center">
+            <p>© {{ current_year }} CKD Care Platform. Confidential health chat for registered users only.</p>
+        </div>
+    </footer>
+
+    <div class="middle-footer"><span>© {{ current_year if current_year is defined else 2026 }} CKD Care</span></div>
+</body>
+</html>

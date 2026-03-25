@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Details - CKD Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .detail-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .result-banner {
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .result-banner.high-risk {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .result-banner h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+        }
+
+        .result-banner .confidence {
+            font-size: 1.5em;
+            opacity: 0.9;
+        }
+
+        .prediction-date {
+            opacity: 0.8;
+            font-size: 0.95em;
+            margin-top: 10px;
+        }
+
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card.critical {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .metric-card.warning {
+            border-left-color: #fd7e14;
+            background: #fffbf8;
+        }
+
+        .metric-card.normal {
+            border-left-color: #28a745;
+            background: #f5fff8;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.4em;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .recommendations-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .disclaimer {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>CKD Care System</h2>
+            </div>
+            <div class="navbar-menu">
+                <a href="{{ url_for('prediction_history') }}" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">← Back to History</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout" style="background-color: rgba(220, 53, 69, 0.9);">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="detail-container">
+        {% set is_high_risk = prediction.risk_level == 'High Risk' %}
+
+        <div class="detail-card">
+            <div class="result-banner {{ 'high-risk' if is_high_risk else '' }}">
+                <h1>{{ '⚠️' if is_high_risk else '✓' }} {{ prediction.risk_level }}</h1>
+                <div class="confidence">Confidence: {{ "%.1f"|format(prediction.confidence) }}%</div>
+                <div class="prediction-date">Assessment Date: {{ prediction.created_at|format_datetime }}</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📊 Vital Signs & Blood Tests</div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Age</div>
+                        <div class="metric-value">{{ prediction.age if prediction.age is not none else 'N/A' }} yrs</div>
+                    </div>
+                    <div class="metric-card {{ 'critical' if prediction.bp > 140 else 'normal' }}">
+                        <div class="metric-label">Blood Pressure</div>
+                        <div class="metric-value">{{ prediction.bp }} mmHg</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Specific Gravity</div>
+                        <div class="metric-value">{{ "%.3f"|format(prediction.sg) }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Blood Glucose Random</div>
+                        <div class="metric-value">{{ prediction.bgr }} mg/dL</div>
+                    </div>
+                    <div class="metric-card {{ 'critical' if prediction.bu > 40 else 'normal' }}">
+                        <div class="metric-label">Blood Urea</div>
+                        <div class="metric-value">{{ prediction.bu }} mg/dL</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔬 Kidney Function Indicators</div>
+                <div class="metrics-grid">
+                    <div class="metric-card {{ 'critical' if prediction.sc > 1.2 else 'normal' }}">
+                        <div class="metric-label">Serum Creatinine</div>
+                        <div class="metric-value">{{ prediction.sc }} mg/dL</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Sodium</div>
+                        <div class="metric-value">{{ prediction.sod }} mEq/L</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Potassium</div>
+                        <div class="metric-value">{{ prediction.pot }} mEq/L</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🩸 Blood Cell Count Analysis</div>
+                <div class="metrics-grid">
+                    <div class="metric-card {{ 'warning' if prediction.hemo < 12 else 'normal' }}">
+                        <div class="metric-label">Hemoglobin</div>
+                        <div class="metric-value">{{ prediction.hemo }} g/dL</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Packed Cell Volume</div>
+                        <div class="metric-value">{{ prediction.pcv }} %</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">White Blood Cell Count</div>
+                        <div class="metric-value">{{ prediction.wc }} K/uL</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Red Blood Cell Count</div>
+                        <div class="metric-value">{{ prediction.rc }} M/uL</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Medical History</div>
+                <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                    <div class="metric-card">
+                        <div class="metric-label">Hypertension</div>
+                        <div class="metric-value">{{ 'Yes' if prediction.htn == 'yes' else 'No' }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Diabetes</div>
+                        <div class="metric-value">{{ 'Yes' if prediction.dm == 'yes' else 'No' }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Coronary Artery Disease</div>
+                        <div class="metric-value">{{ 'Yes' if prediction.cad == 'yes' else 'No' }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Appetite</div>
+                        <div class="metric-value">{{ prediction.appet.title() }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Pedal Edema</div>
+                        <div class="metric-value">{{ 'Yes' if prediction.pe == 'yes' else 'No' }}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Anemia</div>
+                        <div class="metric-value">{{ 'Yes' if prediction.ane == 'yes' else 'No' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Why This Result</div>
+                <div class="disclaimer" style="background: #f7f9ff;">
+                    {{ prediction.explanation if prediction.explanation else 'No additional explanation available.' }}
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">💡 Recommendations</div>
+                <ul class="recommendations-list">
+                    {% for recommendation in smart_suggestions %}
+                        <li>{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+                {% if prediction.risk_level == 'High Risk' %}
+                <div class="disclaimer" style="margin-top: 15px; background: #fff4f4; border-left-color: #dc3545;">
+                    <strong>Consult a Doctor:</strong> Your profile indicates higher CKD risk. Please schedule a kidney specialist consultation.
+                    <div style="margin-top: 10px;">
+                        <a href="{{ url_for('doctors', prediction_id=prediction.id) }}" class="btn btn-primary">Consult a Doctor</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="section">
+                <div class="disclaimer">
+                    <strong>⚠️ Important Disclaimer:</strong> This prediction is generated by an AI model for educational and informational purposes only. 
+                    It should not be used as a substitute for professional medical advice, diagnosis, or treatment. 
+                    Always consult with a qualified healthcare professional before making any medical decisions.
+                </div>
+            </div>
+
+            <div class="section" style="background: #f9f9f9;">
+                <div class="action-buttons">
+                    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">Take Another Assessment</a>
+                    <a href="{{ url_for('download_prediction_report', prediction_id=prediction.id) }}" class="btn btn-primary">Download PDF Report</a>
+                    <a href="{{ url_for('prediction_history') }}" class="btn btn-secondary">Back to History</a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
