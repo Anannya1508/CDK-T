@@ -1,4 +1,5 @@
 # CKD (Chronic Kidney Disease) Prediction Web Application
+"Made by Trisha"
 
 A comprehensive Flask-based medical web application for predicting chronic kidney disease risk using machine learning. The application includes user authentication, interactive prediction forms, prediction history tracking, and medical recommendations.
 
